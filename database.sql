@@ -1,0 +1,12 @@
+CREATE DATABASE postnodeapp;
+
+CREATE TABLE Users (
+id SERIAL PRIMARY KEY,
+firtName VARCHAR(255),
+lastName VARCHAR(255),
+email VARCHAR(255),
+password VARCHAR(255),
+
+Created_At DATETIME
+
+);
