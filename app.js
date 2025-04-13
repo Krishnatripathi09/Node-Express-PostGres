@@ -73,7 +73,39 @@ app.get("/user", async (req, res) => {
   res.status(200).send(user.rows[0]);
 });
 
+app.patch("/user/info", async (req, res) => {
+  const { token } = req.cookies;
 
+  const decodedUpdateId = await jwt.verify(token, "MysecrtetKey789");
+
+  const { id } = decodedUpdateId;
+
+  const { firstName, lastName } = req.body;
+
+  const values = [];
+  const fields = [];
+
+  if (firstName) {
+    fields.push(`"firstName"=$${index++}`);
+    values.push(firstName);
+  }
+
+  if (lastName) {
+    fields.push(`"lastName"=$${index++}`);
+    values.push(lastName);
+  }
+
+  if (fields.length === 0) {
+    res.status(400).send("Please Provide fields to be updated");
+  }
+
+  values.push(id);
+
+  const query = `Update "Users" SET ${fields.join(", ")} where id=$${index}`;
+  const result = await pool.query(query, values);
+
+  res.status(200).send("SueccessFully Updated User Information");
+});
 
 app.listen(PORT, () => {
   console.log(`Server is Running on PORT ${PORT}`);
