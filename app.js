@@ -107,6 +107,35 @@ app.patch("/user/info", async (req, res) => {
   res.status(200).send("SueccessFully Updated User Information");
 });
 
+app.patch("/user/password", async (req, res) => {
+  const { token } = req.cookies;
+
+  const decodedMsgs = await jwt.verify(token, "MysecrtetKey789");
+
+  const { id } = decodedMsgs;
+
+  const { oldPassword, newPassword } = req.body;
+
+  const user = await pool.query(`Select * from "Users" where id=$1`, [id]);
+  if (user.rows.length === 0) {
+    res.status(404).send("User Not Found");
+  }
+  const userPWD = user.rows[0].password;
+  const validPWD = await bcrypt.compare(oldPassword, userPWD);
+
+  if (!validPWD) {
+    res.status(400).send("Please Enter Valid Old Password");
+  }
+
+  const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+  const updatedUser = await pool.query(
+    `Update "Users" Set password =$1 where id=$2`,
+    [hashedPassword, id]
+  );
+
+  res.status(200).send("Password Updated SuccessFully");
+});
 app.listen(PORT, () => {
   console.log(`Server is Running on PORT ${PORT}`);
 });
