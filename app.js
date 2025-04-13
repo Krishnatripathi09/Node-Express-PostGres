@@ -84,6 +84,7 @@ app.patch("/user/info", async (req, res) => {
 
   const values = [];
   const fields = [];
+  let index = 1;
 
   if (firstName) {
     fields.push(`"firstName"=$${index++}`);
@@ -135,6 +136,24 @@ app.patch("/user/password", async (req, res) => {
   );
 
   res.status(200).send("Password Updated SuccessFully");
+});
+app.delete("/user/deleteProfile", async (req, res) => {
+  const { token } = req.cookies;
+
+  const decodedMsgs = await jwt.verify(token, "MysecrtetKey789");
+
+  const { id } = decodedMsgs;
+
+  const user = await pool.query(`Select * from "Users" where id=$1`, [id]);
+  if (user.rows.length === 0) {
+    res.status(404).send("User Not Found");
+  }
+
+  const deletedUser = await pool.query(`Delete from  "Users" where id=$1`, [
+    id,
+  ]);
+
+  res.status(200).send("User Deleted SuccessFully", deletedUser);
 });
 app.listen(PORT, () => {
   console.log(`Server is Running on PORT ${PORT}`);
