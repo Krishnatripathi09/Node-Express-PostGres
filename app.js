@@ -11,13 +11,12 @@ const PORT = 5000;
 
 const apiLimiter = ratelimit({
   windowMs: 15 * 60 * 1000,
-  max: 10,
+  max: 5,
   message: "Too Many Requests from This IP Please try Again After 15 mins",
   standardHeaders: true,
   legacyheaders: false,
 });
 
-app.use(apiLimiter);
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -70,7 +69,7 @@ app.post("/login", async (req, res) => {
   }
 });
 
-app.get("/user", async (req, res) => {
+app.get("/user", apiLimiter, async (req, res) => {
   const { token } = req.cookies;
 
   const decodedMsg = await jwt.verify(token, "MysecrtetKey789");
@@ -81,6 +80,22 @@ app.get("/user", async (req, res) => {
     [id]
   );
   res.status(200).send(user.rows[0]);
+});
+
+app.get("/admin", async (req, res) => {
+  const { token } = req.cookies;
+
+  const decodedMsg = await jwt.verify(token, "MysecrtetKey789");
+  const { id } = decodedMsg;
+  const page = req.query.page || 1;
+  const limit = req.query.limit || 3;
+  const skip = (page - 1) * limit;
+
+  const user = await pool.query(
+    `select * from "Users" order by id ASC LIMIT $1 OFFSET $2`,
+    [limit, skip]
+  );
+  res.status(200).send(user.rows);
 });
 
 app.patch("/user/info", async (req, res) => {
