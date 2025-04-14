@@ -4,10 +4,20 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const app = express();
 const cookieparser = require("cookie-parser");
+const ratelimit = require("express-rate-limit");
 app.use(express.json());
 app.use(cookieparser());
 const PORT = 5000;
 
+const apiLimiter = ratelimit({
+  windowMs: 15 * 60 * 1000,
+  max: 10,
+  message: "Too Many Requests from This IP Please try Again After 15 mins",
+  standardHeaders: true,
+  legacyheaders: false,
+});
+
+app.use(apiLimiter);
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
@@ -19,9 +29,9 @@ app.post("/signup", async (req, res) => {
       [firstName, lastName, email, passwordHash]
     );
 
-    res
-      .status(200)
-      .send(`Data Inserted SuccessFully ${firstName},${lastName},${email}`);
+    res.status(200).json({
+      message: `Data Inserted SuccessFully ${firstName},${lastName},${email}`,
+    });
   } catch (error) {
     console.log(error.message);
   }
