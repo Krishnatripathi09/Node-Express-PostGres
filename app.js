@@ -5,6 +5,8 @@ const jwt = require("jsonwebtoken");
 const app = express();
 const cookieparser = require("cookie-parser");
 const ratelimit = require("express-rate-limit");
+const multer = require("multer");
+const path = require("path");
 app.use(express.json());
 app.use(cookieparser());
 const PORT = 5000;
@@ -180,6 +182,26 @@ app.delete("/user/deleteProfile", async (req, res) => {
 
   res.status(200).send("User Deleted SuccessFully", deletedUser);
 });
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "./uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  },
+});
+
+const upload = multer({ storage: storage });
+
+app.post("/upload", upload.array("file"), (req, res) => {
+  try {
+    res.send("File Uploaded SuccessFully");
+  } catch (err) {
+    console.log(err);
+  }
+});
+
 app.listen(PORT, () => {
   console.log(`Server is Running on PORT ${PORT}`);
 });
