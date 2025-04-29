@@ -7,6 +7,7 @@ const cookieparser = require("cookie-parser");
 const ratelimit = require("express-rate-limit");
 const multer = require("multer");
 const path = require("path");
+const { authRouter } = require("./api.js");
 app.use(express.json());
 app.use(cookieparser());
 const PORT = 5000;
@@ -19,6 +20,7 @@ const apiLimiter = ratelimit({
   legacyheaders: false,
 });
 
+app.use("/", authRouter);
 app.post("/signup", async (req, res) => {
   try {
     const { firstName, lastName, email, password } = req.body;
