@@ -18,6 +18,12 @@ authRouter.post("/createuser", async (req, res) => {
   });
 });
 
+authRouter.get("/userdata", async (req, res) => {
+  const users = await pool.query(`Select * from "newUser"`);
+
+  res.status(200).json({ message: "Found Users :-", users: users.rows[0] });
+});
+
 module.exports = {
   authRouter,
 };
